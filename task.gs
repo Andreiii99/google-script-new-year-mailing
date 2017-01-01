@@ -1,16 +1,12 @@
-var access_token = "";
-var DB_URL = "?characterEncoding=UTF-8";
+var access_token = '';
+var DB_URL = "";
 var DB_USER = "";
 var DB_PSWD = "";
 
 function sendMessage(to, msg) {
-  var url = "https://api.vk.com/method/messages.send?user_id=" + to + "&message=" + msg + "&access_token="+access_token;
+  var url = "https://api.vk.com/method/messages.send?user_id=" + to + "&message=" + msg + "&version=5.60&access_token="+access_token;
   var response = doURL(url);
   return response;
-}
-
-function doGet() {
-  return HtmlService.createHtmlOutput(checkNewYear());
 }
 
 function getConnection() {
@@ -50,8 +46,13 @@ function startMessaging() {
   var rs = getConnection().createStatement().executeQuery("select * from friend where sended != true limit 5;");
   while (rs.next()){
     var name = rs.getString('first_name');
+    var last = rs.getString('last_name');
     var uid = rs.getInt('id');
-    sendMessage(uid, name + ', с Новым годом!');
+    var resp = sendMessage(uid, name + ', с Новым годом!');
+    var mid = JSON.parse(resp).response;
+    if (mid == undefined) {
+      continue;
+    }
     names = names + ' ' + name;
     getConnection().createStatement().execute('update friend set sended = 1 where id = ' + uid);
   }
