@@ -43,7 +43,7 @@ function saveFriends(f) {
 
 function startMessaging() {
   var names = '';
-  var rs = getConnection().createStatement().executeQuery("select * from friend where sended != true limit 5;");
+  var rs = getConnection().createStatement().executeQuery("select * from vk.friend where sended = false and visit = (select min(visit) from vk.friend) limit 5;");
   while (rs.next()){
     var name = rs.getString('first_name');
     var last = rs.getString('last_name');
@@ -51,6 +51,7 @@ function startMessaging() {
     var resp = sendMessage(uid, name + ', с Новым годом!');
     var mid = JSON.parse(resp).response;
     if (mid == undefined) {
+      getConnection().createStatement().execute('update friend set visit = visit + 1 where id = ' + uid);
       continue;
     }
     names = names + ' ' + name;
